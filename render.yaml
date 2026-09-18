@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: ticketscope-demo
+    runtime: python
+    plan: free
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn --workers 2 --threads 4 --bind 0.0.0.0:$PORT 'backend.app:create_app()'
+    healthCheckPath: /api/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.7
+      - key: FLASK_DEBUG
+        value: "0"
+      - key: TICKET_DATABASE
+        value: /tmp/tickets.db
+      - key: TICKET_SEED_DEMO
+        value: "true"
+      - key: TICKET_SECRET_KEY
+        generateValue: true

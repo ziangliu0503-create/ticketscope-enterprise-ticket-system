@@ -1,0 +1,15 @@
+services:
+  ticketscope:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      FLASK_DEBUG: "0"
+      TICKET_SECRET_KEY: "change-this-demo-secret"
+      TICKET_DATABASE: "/data/tickets.db"
+      TICKET_SEED_DEMO: "true"
+    volumes:
+      - ticket-data:/data
+
+volumes:
+  ticket-data:
