@@ -40,8 +40,13 @@ async function download(path, filename) {
   const anchor = document.createElement("a");
   anchor.href = url;
   anchor.download = filename;
+  anchor.style.display = "none";
+  document.body.appendChild(anchor);
   anchor.click();
-  URL.revokeObjectURL(url);
+  anchor.remove();
+  // Safari may cancel the download when the object URL is revoked in the
+  // same event loop tick. Give the browser time to start reading the blob.
+  window.setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 export const api = {

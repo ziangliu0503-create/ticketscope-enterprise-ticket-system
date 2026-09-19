@@ -96,7 +96,7 @@ defineExpose({ reload: loadTickets });
   <div>
     <div class="section-heading">
       <div><p class="eyebrow">{{ viewContent.eyebrow }}</p><h2>{{ viewContent.title }}</h2><small class="scope-note">{{ viewContent.scope }}</small></div>
-      <div class="heading-actions"><button v-if="currentUser.role === 'admin'" class="button ghost" :disabled="exporting" @click="exportReport('csv')">导出CSV</button><button v-if="currentUser.role === 'admin'" class="button ghost" :disabled="exporting" @click="exportReport('xlsx')">导出Excel</button><button v-if="['requester','admin'].includes(currentUser.role)" class="button primary" @click="emit('create-ticket')">＋ {{ currentUser.role === 'requester' ? '创建我的工单' : '代员工创建' }}</button></div>
+      <div class="heading-actions"><button v-if="currentUser.role === 'admin'" class="button ghost" :disabled="exporting === 'csv'" @click="exportReport('csv')">{{ exporting === 'csv' ? '正在导出…' : '导出CSV' }}</button><button v-if="currentUser.role === 'admin'" class="button ghost" :disabled="exporting === 'xlsx'" @click="exportReport('xlsx')">{{ exporting === 'xlsx' ? '正在导出…' : '导出Excel' }}</button><button v-if="['requester','admin'].includes(currentUser.role)" class="button primary" @click="emit('create-ticket')">＋ {{ currentUser.role === 'requester' ? '创建我的工单' : '代员工创建' }}</button></div>
     </div>
     <div class="quick-filter-bar"><strong>快捷视图</strong><button v-for="item in quickFilters" :key="item.label" class="quick-filter" @click="applyQuickFilter(item.value)">{{ item.label }}</button></div>
     <section class="panel filters">
