@@ -79,10 +79,8 @@ defineExpose({ reload: loadDashboard });
     <div class="metric-grid">
       <button class="metric-card" @click="emit('open-list', {})"><span>工单总数</span><strong>{{ dashboard.summary.total }}</strong><small>全部模拟工单</small></button>
       <button class="metric-card" @click="emit('open-list', { status: 'RESOLVED' })"><span>解决率</span><strong>{{ dashboard.summary.resolution_rate }}%</strong><small>{{ dashboard.summary.resolved }} 条已解决/关闭</small></button>
-      <button class="metric-card"><span>SLA达成率</span><strong>{{ dashboard.summary.sla_compliance_rate }}%</strong><small>已解决工单按时完成比例</small></button>
       <button class="metric-card"><span>平均处理时长</span><strong>{{ dashboard.summary.avg_resolution_hours }}h</strong><small>从创建到解决</small></button>
-      <button class="metric-card warning" @click="emit('open-list', { sla: 'WARNING' })"><span>即将超时</span><strong>{{ dashboard.summary.warning }}</strong><small>已进入SLA预警区间</small></button>
-      <button class="metric-card danger" @click="emit('open-list', { sla: 'OVERDUE' })"><span>超时未完成</span><strong>{{ dashboard.summary.overdue }}</strong><small>{{ dashboard.summary.escalated }} 条已升级处理</small></button>
+      <button class="metric-card danger" @click="emit('open-list', {})"><span>超时未完成</span><strong>{{ dashboard.summary.overdue }}</strong><small>超过SLA期限</small></button>
     </div>
 
     <div class="chart-grid">
@@ -94,3 +92,4 @@ defineExpose({ reload: loadDashboard });
     <p class="data-note">数据更新时间：{{ new Date(dashboard.generated_at).toLocaleString() }}。当前展示内容均为模拟数据。</p>
   </div>
 </template>
+

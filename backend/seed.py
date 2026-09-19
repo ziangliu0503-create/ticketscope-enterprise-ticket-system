@@ -4,8 +4,6 @@ import sqlite3
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from werkzeug.security import generate_password_hash
-
 
 DEPARTMENTS = ["财务部", "供应链部", "市场部", "销售部", "人力资源部", "生产运营部"]
 CATEGORIES = ["账号权限", "网络连接", "软件故障", "数据问题", "设备故障", "系统咨询"]
@@ -36,12 +34,6 @@ def seed_database(database_path: str, count: int = 220, seed: int = 20260918):
     connection = sqlite3.connect(path)
     connection.row_factory = sqlite3.Row
     connection.executescript(schema)
-    user_columns = {row["name"] for row in connection.execute("PRAGMA table_info(users)").fetchall()}
-    if "password_hash" not in user_columns:
-        connection.execute("ALTER TABLE users ADD COLUMN password_hash TEXT")
-    ticket_columns = {row["name"] for row in connection.execute("PRAGMA table_info(tickets)").fetchall()}
-    if "escalation_level" not in ticket_columns:
-        connection.execute("ALTER TABLE tickets ADD COLUMN escalation_level INTEGER NOT NULL DEFAULT 0")
     connection.execute("DELETE FROM ticket_logs")
     connection.execute("DELETE FROM tickets")
     connection.execute("DELETE FROM users")
@@ -56,11 +48,8 @@ def seed_database(database_path: str, count: int = 220, seed: int = 20260918):
     for index, department in enumerate(DEPARTMENTS, start=1):
         users.append((f"业务用户{index}", f"user{index}@example.com", department, "requester"))
     connection.executemany(
-        "INSERT INTO users (name, email, department, role, password_hash, created_at) VALUES (?, ?, ?, ?, ?, ?)",
-        [
-            (name, email, department, role, generate_password_hash("Demo123!"), iso(now - timedelta(days=120)))
-            for name, email, department, role in users
-        ],
+        "INSERT INTO users (name, email, department, role, created_at) VALUES (?, ?, ?, ?, ?)",
+        [(name, email, department, role, iso(now - timedelta(days=120))) for name, email, department, role in users],
     )
     user_rows = connection.execute("SELECT id, role, department FROM users").fetchall()
     requester_ids = [row["id"] for row in user_rows if row["role"] == "requester"]
@@ -101,15 +90,13 @@ def seed_database(database_path: str, count: int = 220, seed: int = 20260918):
             """
             INSERT INTO tickets (
                 ticket_no, title, description, department, category, priority, status,
-                requester_id, assignee_id, created_at, updated_at, due_at, resolved_at, resolution,
-                escalation_level
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                requester_id, assignee_id, created_at, updated_at, due_at, resolved_at, resolution
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 f"TKT-{created:%Y%m}-{index:04d}", title, description, department, category,
                 priority, status, requester, assignee, iso(created), iso(updated), iso(due_at),
                 iso(resolved_at) if resolved_at else None, resolution,
-                1 if status not in ("RESOLVED", "CLOSED") and due_at < now and random.random() < 0.18 else 0,
             ),
         )
         ticket_id = cursor.lastrowid
@@ -126,9 +113,9 @@ def seed_database(database_path: str, count: int = 220, seed: int = 20260918):
             connection.execute(
                 """
                 INSERT INTO ticket_logs (ticket_id, action, from_status, to_status, operator_id, note, created_at)
-                VALUES (?, 'STATUS_CHANGED', ?, ?, ?, '模拟状态流转记录', ?)
+                VALUES (?, 'STATUS_CHANGED', 'NEW', ?, ?, '模拟状态流转记录', ?)
                 """,
-                (ticket_id, from_status, to_status, assignee, iso(transition_times[to_status])),
+                (ticket_id, to_status, assignee, iso(transition_times[to_status])),
             )
 
     connection.commit()
