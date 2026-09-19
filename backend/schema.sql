@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS users (
     email TEXT NOT NULL UNIQUE,
     department TEXT NOT NULL,
     role TEXT NOT NULL CHECK (role IN ('requester', 'agent', 'admin')),
+    password_hash TEXT,
     created_at TEXT NOT NULL
 );
 
@@ -25,6 +26,7 @@ CREATE TABLE IF NOT EXISTS tickets (
     due_at TEXT NOT NULL,
     resolved_at TEXT,
     resolution TEXT,
+    escalation_level INTEGER NOT NULL DEFAULT 0,
     FOREIGN KEY (requester_id) REFERENCES users(id),
     FOREIGN KEY (assignee_id) REFERENCES users(id)
 );
@@ -48,4 +50,3 @@ CREATE INDEX IF NOT EXISTS idx_tickets_department ON tickets(department);
 CREATE INDEX IF NOT EXISTS idx_tickets_category ON tickets(category);
 CREATE INDEX IF NOT EXISTS idx_tickets_created_at ON tickets(created_at);
 CREATE INDEX IF NOT EXISTS idx_ticket_logs_ticket ON ticket_logs(ticket_id);
-
